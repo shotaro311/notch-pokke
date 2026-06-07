@@ -22,6 +22,7 @@ final class ProviderStore: ObservableObject {
     }
 
     func select(_ id: PluginID) {
+        guard selectedPluginID != id else { return }
         selectedPluginID = id
         refreshSelected(reason: .userRequested)
     }
@@ -35,9 +36,10 @@ final class ProviderStore: ObservableObject {
     }
 
     func refreshSelected(reason: RefreshReason) {
-        refreshTask?.cancel()
-
         guard let provider = selectedProvider else { return }
+        guard shouldRefresh(provider: provider, reason: reason) else { return }
+
+        refreshTask?.cancel()
 
         let id = provider.manifest.id
         let previous = states[id]?.snapshot
@@ -61,6 +63,24 @@ final class ProviderStore: ObservableObject {
                     )
                 }
             }
+        }
+    }
+
+    private func shouldRefresh(provider: any NotchProvider, reason: RefreshReason) -> Bool {
+        switch reason {
+        case .appLaunch:
+            return provider.manifest.refreshPolicy != .manual
+        case .panelOpened:
+            return provider.manifest.refreshPolicy == .onPanelOpen
+        case .timer:
+            if case .interval = provider.manifest.refreshPolicy {
+                return true
+            }
+            return false
+        case .userRequested:
+            return true
+        case .dependencyChanged:
+            return provider.manifest.refreshPolicy != .manual
         }
     }
 

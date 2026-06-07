@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PluginHostView: View {
     @ObservedObject var providerStore: ProviderStore
+    let isPreviewActive: Bool
 
     var body: some View {
         Group {
@@ -10,9 +11,12 @@ struct PluginHostView: View {
                 provider.makePreview(
                     snapshot: providerStore.snapshot(for: id),
                     state: providerStore.state(for: id),
-                    actions: ProviderActions {
-                        providerStore.refreshSelected(reason: .userRequested)
-                    }
+                    actions: ProviderActions(
+                        isPreviewActive: isPreviewActive,
+                        refresh: {
+                            providerStore.refreshSelected(reason: .userRequested)
+                        }
+                    )
                 )
             } else {
                 EmptyProviderView()

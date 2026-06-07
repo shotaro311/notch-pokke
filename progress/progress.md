@@ -1,6 +1,6 @@
 ---
 project_slug: hover-menu-preview
-updated: 2026-06-03
+updated: 2026-06-07
 updated_by: codex
 status: active
 ---
@@ -29,20 +29,39 @@ status: active
 - 2026-06-03: 左上 handle のラウンド形状変更は意図と違ったため撤回し、元の連続した黒ベース形状へ戻したことを確認済み。
 - 2026-06-03: `main.swift` の単一ファイル構成を App / Windowing / State / Models / Providers / Views / Support に分割し、今後の追加機能を `NotchProvider` として差し込む土台へ変更。デモ用 sessions / usage 表示は削除済み。
 - 2026-06-03: Display placement 設定を追加。`Auto / Main / Sub` で表示先を選べるようにし、ノッチなし画面では fake notch ではなく top-center handle に切り替えるよう変更済み。
+- 2026-06-04: Built-in `Mirror` provider を追加し、panel active 中だけ Mac camera を起動する鏡機能を実装。`swift build`、`./script/build_and_run.sh --verify`、`NSCameraUsageDescription`、hover 後 panel onscreen を確認済み。
+- 2026-06-04: Mirror hover 時の crash を修正。原因は camera session start と preview layer attach の race。preview layer 常駐化、4秒 warm grace、`vga640x480` preset、OSLog を追加。hover stress 後も process 生存、該当例外なし、close 後 CPU 0% を確認済み。
+- 2026-06-04: Mirror close 時の点滅 / 残像対策として、close animation 中は content を維持し、window `orderOut` 後に `contentVisible=false` にする順序へ変更。open / close window state と crash 例外なしを確認済み。
+- 2026-06-04: Mirror の軽快化として、見た目の animation は維持したまま、`contentVisible` と provider active state を分離。camera access 許可済みなら app launch 時に session 構成だけ prewarm し、`startRunning()` は hover active 時だけに限定。`.eventDriven` provider の panel open refresh も skip するように変更。`swift build`、`./script/build_and_run.sh --verify`、hover in/out metadata、crash 例外なしを確認済み。
+- 2026-06-04: Mirror 表示のカクつき / ちらつき対策を追加。camera preview layer の layout 時に暗黙 Core Animation を無効化し、開閉 animation 中だけ preview window shadow を切るように変更。閉じかけからの再 hover では collapsed frame へ戻さず、現在の frame / alpha から開き直す。live camera への SwiftUI blur も削除。`swift build`、`./script/build_and_run.sh --verify`、idle CPU 0%、crash 例外なしを確認済み。
+- 2026-06-04: Mirror が UI 枠より遅れて表示される問題を修正。preview window animation 開始前に `contentVisible=true` を非アニメーションで反映し、ミラー映像が枠の clip と同時に広がるように変更。`swift build`、`./script/build_and_run.sh --verify`、open/close metadata、idle CPU 0%、crash 例外なしを確認済み。
+- 2026-06-04: close 時にカメラ映像の残像が残る問題を抑えるため、close animation 開始時点で `providerActive=false` にし、panel 本体より先に camera preview を fade out するように変更。camera preview fade は `0.12s -> 0.06s` に短縮。`swift build`、`./script/build_and_run.sh --verify`、open/close metadata、idle CPU 0%、crash 例外なしを確認済み。
+- 2026-06-04: 繰り返し open / close 後にもっさりする体感への処理系対策を追加。close fallback reset task を単一管理して古い task を cancel、`contentVisible` / `providerActive` / camera status の同値 publish を抑制、同一 provider 選択を no-op 化、close delay task の参照を実行後に解放。25 cycle stress 後も pill window 1枚へ復帰し、warm grace 後 CPU 0.0%、crash 例外なしを確認済み。
+- 2026-06-04: `GoogleCalendarProvider` を追加。Google installed app OAuth の loopback redirect + PKCE、Keychain token保存、Calendar API `calendarList.list` / `events.list`、月グリッド + 日付hover詳細UI、Settings の connect / disconnect 導線を実装。`swift build`、`./script/build_and_run.sh --verify`、dummy OAuth値の `Info.plist` 注入、loopback socket port確保、callback早着対策、setup check、crash 例外なしを確認済み。gcloud / Calendar API は設定済み。`gcloud iam oauth-clients` と既存gcloud tokenではCalendar OAuth検証に使えないことも確認済み。実Googleアカウント取得には OAuth desktop client ID 設定が必要。
+- 2026-06-04: `shotaro.matsu0311@gmail.com` のChrome `Default` profileで Google Auth Platform の Desktop OAuth client を作成し、`.env.local` に client ID / secret を保存。実OAuth consent、Keychain保存、Calendar API取得まで検証済み。`./script/verify_google_calendar.sh --force-google-sign-in` は `calendar_sources=5`、`events_in_visible_grid=53`、`days_with_events=37`、`today_events=3`。保存済み認証での再取得も `used_login_flow=false` で成功。`./script/build_and_run.sh --verify`、`git diff --check`、起動後 `CPU 0.0%`、直近crash例外なしを確認済み。
+- 2026-06-07: Google Calendar の日付クリック詳細固定、予定追加、編集、削除 UI と Calendar API 書き込み処理を追加。OAuth scope を `calendar.events` に変更し、古い read-only credential は再接続が必要な状態として扱うようにした。`swift build`、`./script/check_google_calendar_setup.sh`、`git diff --check`、`./script/build_and_run.sh --verify` 成功。実Googleアカウントの write scope 追加同意は OAuth callback 待ちで未完了。
 
 ## 進行中
 
-- Codex: ノッチ shell と provider-hosted content の分離、display placement 設定を実装済み。次は実データ provider の要件定義。
+- Codex: `Mirror` provider は crash / 重さ / close 残像 / ちらつき / UI 枠との同期 / 繰り返し開閉時の処理蓄積対策まで実装済み。`Calendar` provider は Google account login、calendarList、events.list、日付別イベント抽出まで実アカウントで検証済み。追加で予定追加、編集、削除の API / UI は実装済みで、write scope の再接続待ち。
 
 ## 次アクション
 
 - `./script/build_and_run.sh --verify` で移行先の build / launch を確認する。
-- アプリ化の要件を決める: app name、最初に実装する provider、終了/自動起動、データ取得元。
+- Mirror の初回 permission UX と表示品質を調整する。
+- Calendar provider の初回表示UXと日付hover詳細の見た目を実画面で微調整する。
+- Calendar provider の write scope 追加同意後、一時イベントの作成・編集・削除を実アカウントで確認する。
+- アプリ化の要件を決める: app name、終了/自動起動、Google OAuth consent screen、設定項目、今後追加する provider。
 
 ## Blocker / Risk
 
 - 現時点はローカル prototype。署名、notarization、LaunchAgent、自動起動は未実装。
+- 初回 camera permission はユーザー操作が必要。
+- 自動検証では顔が写る映像確認は避けている。ユーザー側で mirror 映像の見え方確認が必要。
 - 機密情報や token は含めていない。
+- `.env.local` には Google OAuth client ID / secret が入っているため、値を出力せず、repo に含めない。
+- Google OAuth consent screen が Testing の場合、登録済み test user のみログイン可能。一般公開には Google OAuth app verification が必要になる可能性がある。
+- Calendar event 書き込みには `calendar.events` scope が必要。既存の read-only token では再接続が必要。
 
 ## 引き継ぎ
 
@@ -58,6 +77,8 @@ status: active
 
 ## 詳細ログ
 
+- [2026-06-07](2026-06/2026-06-07_hover-menu-preview.md)
+- [2026-06-04](2026-06/2026-06-04_hover-menu-preview.md)
 - [2026-06-03](2026-06/2026-06-03_hover-menu-preview.md)
 - [2026-06-02](2026-06/2026-06-02_hover-menu-preview.md)
 
@@ -71,6 +92,17 @@ status: active
 
 ## 最近の更新
 
+- 2026-06-07: Calendar provider に日付クリック固定、予定追加、編集、削除 UI / API を追加。OAuth scope は `calendar.events` に変更し、既存 read-only credential は再接続扱いにした。
+- 2026-06-04: Mirror close 時の点滅対策として、content 非表示化を window `orderOut` 後へ移動。
+- 2026-06-04: Mirror の軽快化として、camera prewarm / provider active 分離 / eventDriven refresh skip を追加。見た目の animation は変更なし。
+- 2026-06-04: Mirror のカクつき / ちらつき対策として、camera preview layer の暗黙 animation 無効化、animation 中 shadow off、閉じかけ再 hover の frame snap 防止、live camera への blur 削除を追加。
+- 2026-06-04: Mirror が UI 枠より遅れて追従する問題に対応し、content reveal を window animation 完了後ではなく開始前へ移動。
+- 2026-06-04: Mirror close 時の camera 残像対策として、close 開始時に provider active を落とし、camera preview fade を短縮。
+- 2026-06-04: 繰り返し開閉時の処理系改善として、reset task 単一管理、同値 publish 抑制、camera active 重複通知抑制、provider select no-op を追加。
+- 2026-06-04: `GoogleCalendarProvider`、Google OAuth loopback + PKCE、Keychain token保存、Calendar API client、月表示 + 日付hover詳細UI、Settings接続導線を追加。
+- 2026-06-04: Google Calendar を実Googleアカウントで接続し、Calendar APIから予定取得できることを確認。
+- 2026-06-04: Mirror の crash を修正し、preview layer 常駐化、4秒 warm grace、`vga640x480` preset で軽量化。
+- 2026-06-04: Built-in `Mirror` provider を追加し、Mac camera の鏡プレビューを実装。
 - 2026-06-03: 二段階の neck / overshoot animation を撤回し、直前の軽い morphing に戻した。
 - 2026-06-03: preview close animation を open animation の逆再生に調整。
 - 2026-06-03: top pill を文字なしの左側 arrow handle 表示へ変更。

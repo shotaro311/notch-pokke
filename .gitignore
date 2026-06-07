@@ -3,3 +3,9 @@
 dist/
 *.xcuserstate
 *.xcuserdata/
+.env
+.env.*
+!.env.example
+*oauth*.json
+*credentials*.json
+*token*.json

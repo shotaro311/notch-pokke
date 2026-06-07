@@ -3,12 +3,24 @@ import Combine
 import QuartzCore
 import SwiftUI
 
+private final class HoverMenuPanel: NSPanel {
+    var acceptsKeyboardFocus = false
+
+    override var canBecomeKey: Bool {
+        acceptsKeyboardFocus
+    }
+
+    override var canBecomeMain: Bool {
+        acceptsKeyboardFocus
+    }
+}
+
 @MainActor
 final class HoverWindowController {
     private var pillWindow: NSPanel?
     private var previewWindow: NSPanel?
     private var closeTask: DispatchWorkItem?
-    private var revealTask: DispatchWorkItem?
+    private var resetTask: DispatchWorkItem?
     private var previewAnimationToken = 0
     private let settings: AppSettings
     private let menuStore: HoverMenuStore
@@ -44,7 +56,10 @@ final class HoverWindowController {
     }
 
     private func configurePillWindow() {
-        let panel = makePanel(size: NSSize(width: PanelLayout.defaultPillWidth, height: PanelLayout.pillHeight))
+        let panel = makePanel(
+            size: NSSize(width: PanelLayout.defaultPillWidth, height: PanelLayout.pillHeight),
+            acceptsKeyboardFocus: false
+        )
         panel.hasShadow = false
         panel.contentViewController = NSHostingController(
             rootView: HoverPillView(
@@ -62,7 +77,7 @@ final class HoverWindowController {
             onExit: { [weak self] in self?.scheduleClose() }
         )
 
-        let panel = makePanel(size: PanelLayout.previewSize)
+        let panel = makePanel(size: PanelLayout.previewSize, acceptsKeyboardFocus: true)
         panel.hasShadow = true
         panel.contentViewController = NSHostingController(
             rootView: HoverPanelShell(
@@ -74,13 +89,14 @@ final class HoverWindowController {
         previewWindow = panel
     }
 
-    private func makePanel(size: NSSize) -> NSPanel {
-        let panel = NSPanel(
+    private func makePanel(size: NSSize, acceptsKeyboardFocus: Bool) -> NSPanel {
+        let panel = HoverMenuPanel(
             contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
+        panel.acceptsKeyboardFocus = acceptsKeyboardFocus
         panel.level = .statusBar
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
         panel.backgroundColor = .clear
@@ -107,36 +123,38 @@ final class HoverWindowController {
 
     private func showPreview() {
         cancelClose()
+        resetTask?.cancel()
+        resetTask = nil
 
         guard let screen = targetScreen(), let previewWindow else { return }
         let frames = PanelGeometry.frames(on: screen)
         pillWindow?.setFrame(frames.pill, display: true)
+        setProviderActive(true)
         menuStore.providerStore.refreshSelected(reason: .panelOpened)
 
         previewAnimationToken += 1
         let token = previewAnimationToken
-        revealTask?.cancel()
 
-        if previewWindow.isVisible, previewWindow.alphaValue > 0.98 {
-            previewWindow.ignoresMouseEvents = false
-            previewWindow.setFrame(frames.preview, display: true)
-            setPreviewContentVisible(true, animated: true)
-            return
+        let wasVisible = previewWindow.isVisible
+        if !wasVisible {
+            setPreviewContentVisible(false, animated: false)
+            previewWindow.alphaValue = shouldReduceMotion ? 1 : 0.9
+            previewWindow.setFrame(shouldReduceMotion ? frames.preview : frames.collapsedPreview, display: true)
         }
 
-        setPreviewContentVisible(false, animated: false)
-        previewWindow.alphaValue = shouldReduceMotion ? 1 : 0.9
+        previewWindow.hasShadow = false
         previewWindow.ignoresMouseEvents = true
-        previewWindow.setFrame(shouldReduceMotion ? frames.preview : frames.collapsedPreview, display: true)
         previewWindow.orderFrontRegardless()
 
         if shouldReduceMotion {
+            previewWindow.hasShadow = true
+            previewWindow.invalidateShadow()
             previewWindow.ignoresMouseEvents = false
             setPreviewContentVisible(true, animated: false)
             return
         }
 
-        revealPreviewContent(after: PanelAnimationTiming.contentRevealDelay)
+        setPreviewContentVisible(true, animated: false)
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = PanelAnimationTiming.previewOpenDuration
@@ -148,6 +166,8 @@ final class HoverWindowController {
                 guard let self, let previewWindow, self.previewAnimationToken == token else { return }
                 previewWindow.setFrame(frames.preview, display: true)
                 previewWindow.alphaValue = 1
+                previewWindow.hasShadow = true
+                previewWindow.invalidateShadow()
                 previewWindow.ignoresMouseEvents = false
             }
         }
@@ -156,7 +176,9 @@ final class HoverWindowController {
     private func scheduleClose() {
         closeTask?.cancel()
         let task = DispatchWorkItem { [weak self] in
-            guard let self, !self.isMouseInsideHoverRegion() else { return }
+            guard let self else { return }
+            self.closeTask = nil
+            guard !self.isMouseInsideHoverRegion() else { return }
             self.closePreview()
         }
         closeTask = task
@@ -172,25 +194,25 @@ final class HoverWindowController {
     }
 
     private func closePreview() {
-        revealTask?.cancel()
         guard let previewWindow, previewWindow.isVisible else { return }
 
         previewAnimationToken += 1
         let token = previewAnimationToken
+        resetTask?.cancel()
+        resetTask = nil
+        setProviderActive(false)
 
         guard !shouldReduceMotion, let screen = previewWindow.screen ?? targetScreen() else {
-            setPreviewContentVisible(false, animated: false)
             previewWindow.orderOut(nil)
+            setPreviewContentVisible(false, animated: false)
             previewWindow.alphaValue = 1
+            previewWindow.hasShadow = true
             return
         }
 
         let frames = PanelGeometry.frames(on: screen)
+        previewWindow.hasShadow = false
         previewWindow.ignoresMouseEvents = true
-        hidePreviewContent(
-            after: PanelAnimationTiming.previewCloseDuration - PanelAnimationTiming.contentHideLeadTime,
-            token: token
-        )
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = PanelAnimationTiming.previewCloseDuration
@@ -200,22 +222,32 @@ final class HoverWindowController {
         } completionHandler: { [weak self, weak previewWindow] in
             Task { @MainActor in
                 guard let self, let previewWindow, self.previewAnimationToken == token else { return }
+                self.resetTask?.cancel()
+                self.resetTask = nil
                 self.resetClosedPreviewWindow(previewWindow, frame: frames.preview)
             }
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + PanelAnimationTiming.previewCloseDuration + 0.03) { [weak self, weak previewWindow] in
+        let task = DispatchWorkItem { [weak self, weak previewWindow] in
             Task { @MainActor in
                 guard let self, let previewWindow, self.previewAnimationToken == token else { return }
                 self.resetClosedPreviewWindow(previewWindow, frame: frames.preview)
             }
         }
+        resetTask?.cancel()
+        resetTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + PanelAnimationTiming.previewCloseDuration + 0.03, execute: task)
     }
 
     private func resetClosedPreviewWindow(_ previewWindow: NSPanel, frame: NSRect) {
-        setPreviewContentVisible(false, animated: false)
+        resetTask?.cancel()
+        resetTask = nil
         previewWindow.orderOut(nil)
+        setProviderActive(false)
+        setPreviewContentVisible(false, animated: false)
         previewWindow.alphaValue = 1
+        previewWindow.hasShadow = true
+        previewWindow.invalidateShadow()
         previewWindow.ignoresMouseEvents = false
         previewWindow.setFrame(frame, display: false)
     }
@@ -278,26 +310,9 @@ final class HoverWindowController {
         NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
-    private func revealPreviewContent(after delay: TimeInterval) {
-        let task = DispatchWorkItem { [weak self] in
-            self?.setPreviewContentVisible(true, animated: true)
-        }
-        revealTask = task
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: task)
-    }
-
-    private func hidePreviewContent(after delay: TimeInterval, token: Int) {
-        let task = DispatchWorkItem { [weak self] in
-            Task { @MainActor in
-                guard let self, self.previewAnimationToken == token else { return }
-                self.setPreviewContentVisible(false, animated: true)
-            }
-        }
-        revealTask = task
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: task)
-    }
-
     private func setPreviewContentVisible(_ isVisible: Bool, animated: Bool) {
+        guard menuStore.contentVisible != isVisible else { return }
+
         guard animated else {
             menuStore.contentVisible = isVisible
             return
@@ -306,6 +321,11 @@ final class HoverWindowController {
         withAnimation(.spring(response: 0.28, dampingFraction: 0.88)) {
             menuStore.contentVisible = isVisible
         }
+    }
+
+    private func setProviderActive(_ isActive: Bool) {
+        guard menuStore.providerActive != isActive else { return }
+        menuStore.providerActive = isActive
     }
 
     private func observeSettings() {

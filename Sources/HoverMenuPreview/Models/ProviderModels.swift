@@ -18,8 +18,10 @@ struct PluginManifest: Hashable, Codable, Sendable, Identifiable {
 }
 
 enum PluginPermission: Hashable, Codable, Sendable {
+    case camera
     case codexSessionsRead
     case calendarRead
+    case calendarWrite
     case notificationsRead
     case systemStatsRead
     case processListRead

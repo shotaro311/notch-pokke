@@ -10,6 +10,24 @@ macOS hover prototype. It places a small black pill at the top of the screen and
 
 Use `./script/build_and_run.sh --verify` to build, launch, and confirm the process exists.
 
+## Current features
+
+The app currently ships with built-in `Mirror` and `Calendar` providers.
+
+- Hover the notch handle to open the preview panel.
+- The app preconfigures the camera session when access is already granted, but starts the Mac camera only while the mirror preview is active.
+- The camera preview is horizontally mirrored so it behaves like a real mirror.
+- Closing the panel stops the camera session.
+- The first use may show the macOS camera permission prompt.
+
+Calendar:
+
+- Hover a date to preview that day's events.
+- Click a date to pin that day's schedule in the detail pane.
+- Add events from writable calendars.
+- Edit event title, time, all-day state, location, and notes.
+- Delete events from writable calendars.
+
 ## Project path
 
 ```text
@@ -38,6 +56,40 @@ Sources/HoverMenuPreview/
 Keep `Windowing` responsible for AppKit windows, screen/notch measurements, and open/close animation. Provider implementations should not touch `NSPanel`, `NSApp`, or screen coordinates.
 
 Add future features by implementing `NotchProvider`, registering them in `ProviderRegistry`, and rendering through `PluginHostView`. Start with compiled-in providers. If external plugins are needed later, prefer helper process / XPC / JSON-RPC returning `manifest + snapshot`, while the app keeps control of rendering and permissions.
+
+## Google Calendar provider
+
+The Calendar provider uses Google's installed app OAuth flow with a loopback redirect and PKCE. No Google token or client secret is stored in source control.
+
+Create a local `.env.local` from `.env.example`:
+
+```bash
+GOOGLE_CLIENT_ID="YOUR_DESKTOP_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="YOUR_DESKTOP_OAUTH_CLIENT_SECRET"
+GOOGLE_OAUTH_CHROME_PROFILE="Default"
+```
+
+To create the OAuth client in the active `gcloud` project:
+
+```bash
+./script/open_google_oauth_console.sh
+```
+
+In Google Auth Platform, create a client with application type `Desktop app`.
+Use the generated client ID and client secret in `.env.local`. Set
+`GOOGLE_OAUTH_CHROME_PROFILE` when OAuth should open a specific Chrome profile
+instead of the default browser.
+
+Then run:
+
+```bash
+./script/check_google_calendar_setup.sh
+./script/build_and_run.sh --verify
+./script/verify_google_calendar.sh
+```
+
+`script/build_and_run.sh` injects the configured OAuth values into the generated app `Info.plist`. If `GOOGLE_CLIENT_ID` is missing, the Calendar provider still loads and shows a configuration-required state.
+`script/verify_google_calendar.sh` uses the same OAuth, Calendar API, and day-detail filtering code as the app, and prints only counts/ranges rather than event details.
 
 ## Display placement
 

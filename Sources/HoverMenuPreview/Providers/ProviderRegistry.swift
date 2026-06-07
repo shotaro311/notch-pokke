@@ -6,6 +6,12 @@ struct ProviderRegistry: Sendable {
     }
 
     static let empty = ProviderRegistry()
+    static let builtIn = ProviderRegistry(
+        providers: [
+            MirrorProvider(),
+            GoogleCalendarProvider()
+        ]
+    )
 
     var manifests: [PluginManifest] {
         providers.map(\.manifest)

@@ -17,12 +17,14 @@ struct HoverPanelShell: View {
                 Divider()
                     .overlay(Color.white.opacity(0.08))
 
-                PluginHostView(providerStore: store.providerStore)
+                PluginHostView(
+                    providerStore: store.providerStore,
+                    isPreviewActive: store.providerActive
+                )
             }
             .opacity(store.contentVisible ? 1 : 0)
             .scaleEffect(store.contentVisible ? 1 : 0.92, anchor: .top)
             .offset(y: store.contentVisible ? 0 : -14)
-            .blur(radius: store.contentVisible ? 0 : 3)
         }
         .frame(width: PanelLayout.previewSize.width, height: PanelLayout.previewSize.height)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -37,20 +39,22 @@ struct HoverPanelShell: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Text("Plugins")
+            Text(store.providerStore.selectedProvider?.manifest.title ?? "Plugins")
                 .font(.system(size: 13, weight: .bold, design: .monospaced))
                 .foregroundStyle(.white)
 
             Spacer()
 
-            ForEach(store.providerStore.registry.manifests) { manifest in
-                Button {
-                    store.providerStore.select(manifest.id)
-                } label: {
-                    Image(systemName: manifest.symbolName)
+            if store.providerStore.registry.manifests.count > 1 {
+                ForEach(store.providerStore.registry.manifests) { manifest in
+                    Button {
+                        store.providerStore.select(manifest.id)
+                    } label: {
+                        Image(systemName: manifest.symbolName)
+                    }
+                    .buttonStyle(IconButtonStyle(selected: store.providerStore.selectedPluginID == manifest.id))
+                    .help(manifest.title)
                 }
-                .buttonStyle(IconButtonStyle(selected: store.providerStore.selectedPluginID == manifest.id))
-                .help(manifest.title)
             }
 
             Button {

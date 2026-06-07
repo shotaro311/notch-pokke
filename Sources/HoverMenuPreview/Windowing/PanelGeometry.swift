@@ -5,7 +5,7 @@ enum PanelLayout {
     static let topEdgeOverfill: CGFloat = 3
     static let notchHandleWidth: CGFloat = 54
     static let previewGap: CGFloat = 0
-    static let previewSize = NSSize(width: 472, height: 312)
+    static let previewSize = NSSize(width: 520, height: 372)
     static let collapsedPreviewSize = NSSize(width: 72, height: 12)
 
     static var defaultPillWidth: CGFloat {
