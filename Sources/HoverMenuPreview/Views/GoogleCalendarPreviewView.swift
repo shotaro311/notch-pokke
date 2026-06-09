@@ -310,7 +310,7 @@ struct GoogleCalendarPreviewView: View {
             }
 
             Button {
-                store.signIn()
+                store.connect()
             } label: {
                 HStack(spacing: 7) {
                     if store.connectionState == .signingIn {
@@ -435,6 +435,7 @@ struct GoogleCalendarPreviewView: View {
 
     private func refreshIfNeeded() {
         guard isActive else { return }
+        store.restoreConnectionIfNeeded()
         store.refreshMonth(containing: displayedMonth)
     }
 

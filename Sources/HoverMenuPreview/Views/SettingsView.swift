@@ -144,7 +144,7 @@ struct SettingsView: View {
                     }
                 } else {
                     Button(calendarConnectTitle) {
-                        calendarStore.signIn()
+                        calendarStore.connect()
                     }
                     .disabled(!calendarStore.isConfigured || calendarStore.connectionState == .signingIn)
                 }

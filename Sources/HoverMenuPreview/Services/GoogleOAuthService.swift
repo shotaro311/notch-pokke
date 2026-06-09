@@ -54,6 +54,12 @@ struct GoogleOAuthToken: Codable, Equatable, Sendable {
     }
 }
 
+enum GoogleOAuthStoredCredentialStatus: Equatable {
+    case missing
+    case needsReconnect
+    case ready
+}
+
 enum GoogleOAuthError: LocalizedError {
     case missingConfiguration
     case browserOpenFailed
@@ -104,14 +110,18 @@ final class GoogleOAuthService: @unchecked Sendable {
     }
 
     func hasStoredCredential() -> Bool {
-        (try? keychain.load()) != nil
+        storedCredentialStatus() != .missing
     }
 
     func hasRequiredCalendarCredential() -> Bool {
+        storedCredentialStatus() == .ready
+    }
+
+    func storedCredentialStatus() -> GoogleOAuthStoredCredentialStatus {
         guard let credential = try? keychain.load() else {
-            return false
+            return .missing
         }
-        return Self.hasRequiredCalendarScopes(credential.grantedScopes)
+        return Self.hasRequiredCalendarScopes(credential.grantedScopes) ? .ready : .needsReconnect
     }
 
     func signIn() async throws {

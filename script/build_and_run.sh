@@ -49,6 +49,7 @@ GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET:-$(read_env_key GOOGLE_CLIENT_SECRE
 GOOGLE_OAUTH_CHROME_PROFILE="${GOOGLE_OAUTH_CHROME_PROFILE:-$(read_env_key GOOGLE_OAUTH_CHROME_PROFILE)}"
 GOOGLE_OAUTH_CHROME_USER_DATA_DIR="${GOOGLE_OAUTH_CHROME_USER_DATA_DIR:-$(read_env_key GOOGLE_OAUTH_CHROME_USER_DATA_DIR)}"
 GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT="${GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT:-$(read_env_key GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT)}"
+CODESIGN_IDENTITY="${CODESIGN_IDENTITY:-$(read_env_key CODESIGN_IDENTITY)}"
 GOOGLE_OAUTH_PLIST=""
 if [[ -n "$GOOGLE_CLIENT_ID" ]]; then
   GOOGLE_OAUTH_PLIST+="  <key>GoogleOAuthClientID</key>
@@ -75,6 +76,11 @@ if [[ -n "$GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT" ]]; then
   <string>$(xml_escape "$GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT")</string>
 "
 fi
+
+default_codesign_identity() {
+  security find-identity -p codesigning -v 2>/dev/null \
+    | awk -F'"' '/Apple Development:/ { print $2; exit }'
+}
 
 for process_name in "$APP_NAME" "$LEGACY_PROCESS_NAME"; do
   if pgrep -x "$process_name" >/dev/null 2>&1; then
@@ -123,6 +129,17 @@ ${GOOGLE_OAUTH_PLIST}  <key>NSAppTransportSecurity</key>
 </dict>
 </plist>
 PLIST
+
+if [[ -z "$CODESIGN_IDENTITY" ]]; then
+  CODESIGN_IDENTITY="$(default_codesign_identity || true)"
+fi
+
+if [[ -n "$CODESIGN_IDENTITY" ]]; then
+  codesign --force --deep --sign "$CODESIGN_IDENTITY" "$BUNDLE_DIR" >/dev/null
+  echo "Signed $APP_NAME.app with $CODESIGN_IDENTITY"
+else
+  echo "No codesigning identity found; using SwiftPM ad-hoc signature"
+fi
 
 if [[ "${1:-}" == "--verify" ]]; then
   /usr/bin/open -n "$BUNDLE_DIR"
