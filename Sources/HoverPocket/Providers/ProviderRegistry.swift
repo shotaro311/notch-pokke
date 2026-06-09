@@ -1,7 +1,7 @@
 struct ProviderRegistry: Sendable {
-    let providers: [any NotchProvider]
+    let providers: [any PocketProvider]
 
-    init(providers: [any NotchProvider] = []) {
+    init(providers: [any PocketProvider] = []) {
         self.providers = providers
     }
 
@@ -18,7 +18,7 @@ struct ProviderRegistry: Sendable {
         providers.map(\.manifest)
     }
 
-    func provider(for id: PluginID?) -> (any NotchProvider)? {
+    func provider(for id: PluginID?) -> (any PocketProvider)? {
         guard let id else { return providers.first }
         return providers.first { $0.manifest.id == id }
     }

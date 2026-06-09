@@ -36,7 +36,7 @@ enum LoopbackOAuthReceiverError: LocalizedError {
 final class LoopbackOAuthReceiver: @unchecked Sendable {
     private let socketFD: Int32
     private let source: DispatchSourceRead
-    private let queue = DispatchQueue(label: "local.codex.hover-menu-preview.oauth-loopback")
+    private let queue = DispatchQueue(label: "local.codex.hover-pocket.oauth-loopback")
     private let lock = NSLock()
     private var continuation: CheckedContinuation<OAuthCallback, Error>?
     private var pendingResult: Result<OAuthCallback, Error>?
@@ -184,7 +184,7 @@ final class LoopbackOAuthReceiver: @unchecked Sendable {
         let body = """
         <html><head><meta charset="utf-8"><title>\(title)</title></head>
         <body style="font-family:-apple-system;padding:24px">
-        <h3>\(title)</h3><p>You can return to ノッチポッケ.</p>
+        <h3>\(title)</h3><p>You can return to ホバーポケット.</p>
         </body></html>
         """
         let response = """

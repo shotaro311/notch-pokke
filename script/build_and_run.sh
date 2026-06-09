@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-APP_NAME="NotchPokke"
-DISPLAY_NAME="ノッチポッケ"
-PRODUCT_NAME="NotchPokke"
-LEGACY_PROCESS_NAME="HoverMenuPreview"
+APP_NAME="HoverPocket"
+DISPLAY_NAME="ホバーポケット"
+PRODUCT_NAME="HoverPocket"
+LEGACY_PROCESS_NAMES=("NotchPocket" "NotchPokke" "HoverMenuPreview")
 BUNDLE_DIR="$ROOT_DIR/dist/$APP_NAME.app"
 EXECUTABLE_PATH="$BUNDLE_DIR/Contents/MacOS/$APP_NAME"
 
@@ -49,6 +49,7 @@ GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET:-$(read_env_key GOOGLE_CLIENT_SECRE
 GOOGLE_OAUTH_CHROME_PROFILE="${GOOGLE_OAUTH_CHROME_PROFILE:-$(read_env_key GOOGLE_OAUTH_CHROME_PROFILE)}"
 GOOGLE_OAUTH_CHROME_USER_DATA_DIR="${GOOGLE_OAUTH_CHROME_USER_DATA_DIR:-$(read_env_key GOOGLE_OAUTH_CHROME_USER_DATA_DIR)}"
 GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT="${GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT:-$(read_env_key GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT)}"
+CODESIGN_IDENTITY="${CODESIGN_IDENTITY:-$(read_env_key CODESIGN_IDENTITY)}"
 GOOGLE_OAUTH_PLIST=""
 if [[ -n "$GOOGLE_CLIENT_ID" ]]; then
   GOOGLE_OAUTH_PLIST+="  <key>GoogleOAuthClientID</key>
@@ -76,7 +77,12 @@ if [[ -n "$GOOGLE_OAUTH_CHROME_REMOTE_DEBUGGING_PORT" ]]; then
 "
 fi
 
-for process_name in "$APP_NAME" "$LEGACY_PROCESS_NAME"; do
+default_codesign_identity() {
+  security find-identity -p codesigning -v 2>/dev/null \
+    | awk -F'"' '/Apple Development:/ { print $2; exit }'
+}
+
+for process_name in "$APP_NAME" "${LEGACY_PROCESS_NAMES[@]}"; do
   if pgrep -x "$process_name" >/dev/null 2>&1; then
     pkill -x "$process_name" || true
     sleep 0.2
@@ -98,7 +104,7 @@ cat > "$BUNDLE_DIR/Contents/Info.plist" <<PLIST
   <key>CFBundleExecutable</key>
   <string>$APP_NAME</string>
   <key>CFBundleIdentifier</key>
-  <string>local.codex.notch-pokke</string>
+  <string>local.codex.hover-pocket</string>
   <key>CFBundleDisplayName</key>
   <string>$DISPLAY_NAME</string>
   <key>CFBundleName</key>
@@ -115,14 +121,25 @@ ${GOOGLE_OAUTH_PLIST}  <key>NSAppTransportSecurity</key>
     <true/>
   </dict>
   <key>NSCameraUsageDescription</key>
-  <string>ノッチポッケ uses the Mac camera to show a mirror preview while the notch panel is open.</string>
+  <string>ホバーポケット uses the Mac camera to show a mirror preview while the hover panel is open.</string>
   <key>NSMicrophoneUsageDescription</key>
-  <string>ノッチポッケ uses the microphone only for the mirror microphone check.</string>
+  <string>ホバーポケット uses the microphone only for the mirror microphone check.</string>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
 </dict>
 </plist>
 PLIST
+
+if [[ -z "$CODESIGN_IDENTITY" ]]; then
+  CODESIGN_IDENTITY="$(default_codesign_identity || true)"
+fi
+
+if [[ -n "$CODESIGN_IDENTITY" ]]; then
+  codesign --force --deep --sign "$CODESIGN_IDENTITY" "$BUNDLE_DIR" >/dev/null
+  echo "Signed $APP_NAME.app with $CODESIGN_IDENTITY"
+else
+  echo "No codesigning identity found; using SwiftPM ad-hoc signature"
+fi
 
 if [[ "${1:-}" == "--verify" ]]; then
   /usr/bin/open -n "$BUNDLE_DIR"

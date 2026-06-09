@@ -9,6 +9,18 @@ final class AppSettings: ObservableObject {
         }
     }
 
+    @Published var panelSize: PanelSizeOption {
+        didSet {
+            defaults.set(panelSize.rawValue, forKey: Self.panelSizeKey)
+        }
+    }
+
+    @Published var providerSwitchingMode: ProviderSwitchingMode {
+        didSet {
+            defaults.set(providerSwitchingMode.rawValue, forKey: Self.providerSwitchingModeKey)
+        }
+    }
+
     @Published var providerOrderRawValues: [String] {
         didSet {
             defaults.set(providerOrderRawValues, forKey: Self.providerOrderKey)
@@ -47,6 +59,8 @@ final class AppSettings: ObservableObject {
 
     private let defaults: UserDefaults
     private static let displayPlacementModeKey = "displayPlacementMode"
+    private static let panelSizeKey = "panelSize"
+    private static let providerSwitchingModeKey = "providerSwitchingMode"
     private static let providerOrderKey = "providerOrder"
     private static let hiddenProvidersKey = "hiddenProviders"
     private static let rememberLastSelectedProviderKey = "rememberLastSelectedProvider"
@@ -58,6 +72,10 @@ final class AppSettings: ObservableObject {
         self.defaults = defaults
         let rawValue = defaults.string(forKey: Self.displayPlacementModeKey)
         self.displayPlacementMode = rawValue.flatMap(DisplayPlacementMode.init(rawValue:)) ?? .automatic
+        let panelSizeRawValue = defaults.string(forKey: Self.panelSizeKey)
+        self.panelSize = panelSizeRawValue.flatMap(PanelSizeOption.init(rawValue:)) ?? .medium
+        let providerSwitchingModeRawValue = defaults.string(forKey: Self.providerSwitchingModeKey)
+        self.providerSwitchingMode = providerSwitchingModeRawValue.flatMap(ProviderSwitchingMode.init(rawValue:)) ?? .click
         self.providerOrderRawValues = defaults.stringArray(forKey: Self.providerOrderKey) ?? []
         let hiddenValues = defaults.stringArray(forKey: Self.hiddenProvidersKey) ?? []
         self.hiddenProviderRawValues = Set(hiddenValues)

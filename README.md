@@ -1,8 +1,8 @@
-# ノッチポッケ (NotchPokke)
+# ホバーポケット (HoverPocket)
 
-ノッチポッケは、MacBook のノッチ付近にマウスを重ねるだけで、ミラー、Google Calendar、クリップボード履歴を素早く開ける macOS プロトタイプアプリです。
+ホバーポケットは、画面上部へマウスを重ねるだけで、ミラー、Google Calendar、クリップボード履歴を素早く開ける macOS プロトタイプアプリです。
 
-画面上部に小さな黒いハンドルを置き、そこへホバーすると暗いユーティリティパネルが表示されます。通常のメニューバーアプリよりも、ノッチ周辺からパッと取り出す体験を重視しています。
+画面上部に小さな黒いハンドルを置き、そこへホバーすると暗いユーティリティパネルが表示されます。通常のメニューバーアプリよりも、必要なものをポケットからパッと取り出す体験を重視しています。
 
 ## 現在できること
 
@@ -38,7 +38,9 @@
 
 - 表示するプロバイダーを設定画面で切り替えられます。
 - 最後に開いたパネルを次回も優先表示するか選べます。
+- プロバイダーアイコンの切り替え方式を、クリック式またはホバー式から選べます。
 - パネル上部のプロバイダーアイコンを Control クリックすると、表示順を移動できます。
+- パネル表示領域を小、中、大の 3 段階で切り替えられます。
 - ミラー下部のマイクチェック UI を表示するか選べます。
 
 ## 動かし方
@@ -53,7 +55,7 @@
 ./script/build_and_run.sh --verify
 ```
 
-成功すると `NotchPokke launched` と表示されます。
+成功すると `HoverPocket launched` と表示されます。
 
 ## Google Calendar の設定
 
@@ -99,15 +101,15 @@ Google Auth Platform で application type を `Desktop app` にして client を
 
 SwiftUI の `MenuBarExtra` はクリック操作が中心で、標準の右上メニューバー領域に寄っています。このプロトタイプでは、AppKit の `NSPanel` と SwiftUI の hover handler を組み合わせ、画面上部中央のノッチ周辺にトリガーを置いています。
 
-現在の構成は、ノッチ shell と provider-hosted content に分かれています。新しい機能は `NotchProvider` として追加し、`ProviderRegistry` に登録して `PluginHostView` から表示する方針です。
+現在の構成は、hover shell と provider-hosted content に分かれています。新しい機能は `PocketProvider` として追加し、`ProviderRegistry` に登録して `PluginHostView` から表示する方針です。
 
 ```text
-Sources/HoverMenuPreview/
+Sources/HoverPocket/
   App/         アプリ delegate と起動処理
   Windowing/   NSPanel 作成、ノッチ位置計算、hover close、animation timing
   State/       パネル表示状態、provider 選択、loading state
   Models/      plugin ID、manifest、permission、snapshot、preview content
-  Providers/   NotchProvider protocol と ProviderRegistry
+  Providers/   PocketProvider protocol と ProviderRegistry
   Views/       pill、panel shell、plugin host、共通 UI
   Support/     再利用 shape と小さな helper
 ```
@@ -139,8 +141,14 @@ pill frame = x: 609pt, width: 239pt
 
 これにより、左側のハンドル右端がノッチ左端に揃い、黒いベースがノッチ裏まで続く見た目になります。
 
+## License
+
+MIT License です。詳細は [LICENSE](LICENSE) を確認してください。
+
+このライセンスはソースコードに対する利用許諾です。`ホバーポケット` / `HoverPocket` の名称、ロゴ、ブランド表示の商標的な利用許諾とは別です。
+
 ## 注意
 
-- 現時点ではローカルプロトタイプです。署名、notarization、自動起動、配布用 installer は未整備です。
+- 現時点ではローカルプロトタイプです。開発用のコード署名は起動スクリプトで行いますが、notarization、自動起動、配布用 installer は未整備です。
 - `.env.local`、OAuth client secret、token 類は Git に含めないでください。
 - Clipboard 履歴は機密テキストも拾える可能性があります。今後、除外ルールや private mode を追加する余地があります。

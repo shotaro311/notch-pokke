@@ -22,8 +22,21 @@ final class ClipboardHistoryStore: ObservableObject {
         let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)
             .first ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         return base
-            .appendingPathComponent("HoverMenuPreview", isDirectory: true)
+            .appendingPathComponent("HoverPocket", isDirectory: true)
             .appendingPathComponent("Clipboard", isDirectory: true)
+    }()
+
+    private lazy var legacyStorageDirectories: [URL] = {
+        let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+            .first ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        return [
+            base
+                .appendingPathComponent("NotchPocket", isDirectory: true)
+                .appendingPathComponent("Clipboard", isDirectory: true),
+            base
+                .appendingPathComponent("HoverMenuPreview", isDirectory: true)
+                .appendingPathComponent("Clipboard", isDirectory: true)
+        ]
     }()
 
     private var metadataURL: URL {
@@ -31,6 +44,7 @@ final class ClipboardHistoryStore: ObservableObject {
     }
 
     private init() {
+        migrateLegacyStorageIfNeeded()
         load()
     }
 
@@ -201,6 +215,41 @@ final class ClipboardHistoryStore: ObservableObject {
 
     private func ensureStorageDirectory() throws {
         try fileManager.createDirectory(at: storageDirectory, withIntermediateDirectories: true)
+    }
+
+    private func migrateLegacyStorageIfNeeded() {
+        guard !fileManager.fileExists(atPath: metadataURL.path) else { return }
+        guard let legacyStorageDirectory = legacyStorageDirectories.first(where: { directory in
+            let legacyMetadataURL = directory.appendingPathComponent("history.json", isDirectory: false)
+            return fileManager.fileExists(atPath: legacyMetadataURL.path)
+        }) else {
+            return
+        }
+
+        do {
+            try fileManager.createDirectory(
+                at: storageDirectory.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            if fileManager.fileExists(atPath: storageDirectory.path) {
+                let legacyItems = try fileManager.contentsOfDirectory(
+                    at: legacyStorageDirectory,
+                    includingPropertiesForKeys: nil
+                )
+                for legacyItem in legacyItems {
+                    let destination = storageDirectory.appendingPathComponent(
+                        legacyItem.lastPathComponent,
+                        isDirectory: false
+                    )
+                    guard !fileManager.fileExists(atPath: destination.path) else { continue }
+                    try fileManager.copyItem(at: legacyItem, to: destination)
+                }
+            } else {
+                try fileManager.copyItem(at: legacyStorageDirectory, to: storageDirectory)
+            }
+        } catch {
+            lastErrorMessage = "Legacy clipboard history could not be migrated."
+        }
     }
 
     private static func pngData(from image: NSImage) -> Data? {

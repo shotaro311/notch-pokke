@@ -13,20 +13,12 @@ final class GoogleCalendarStore: ObservableObject {
     private let apiClient: GoogleCalendarAPIClient
     private var refreshTask: Task<Void, Never>?
     private var lastLoadedMonth: Date?
+    private var didCheckStoredCredential = false
 
     init(oauth: GoogleOAuthService = GoogleOAuthService()) {
         self.oauth = oauth
         self.apiClient = GoogleCalendarAPIClient(oauth: oauth)
-
-        if !oauth.isConfigured {
-            connectionState = .missingConfiguration
-        } else if oauth.hasRequiredCalendarCredential() {
-            connectionState = .signedIn
-        } else if oauth.hasStoredCredential() {
-            connectionState = .needsReconnect
-        } else {
-            connectionState = .signedOut
-        }
+        connectionState = oauth.isConfigured ? .signedOut : .missingConfiguration
     }
 
     var isConfigured: Bool {
@@ -35,6 +27,12 @@ final class GoogleCalendarStore: ObservableObject {
 
     var isSignedIn: Bool {
         connectionState == .signedIn
+    }
+
+    func connect() {
+        restoreConnectionIfNeeded()
+        guard connectionState != .signedIn else { return }
+        signIn()
     }
 
     func signIn() {
@@ -55,13 +53,7 @@ final class GoogleCalendarStore: ObservableObject {
                 }
             } catch {
                 await MainActor.run {
-                    if self.oauth.hasRequiredCalendarCredential() {
-                        self.connectionState = .signedIn
-                    } else if self.oauth.hasStoredCredential() {
-                        self.connectionState = .needsReconnect
-                    } else {
-                        self.connectionState = .signedOut
-                    }
+                    self.updateConnectionStateFromStoredCredential()
                     self.lastErrorMessage = Self.safeErrorMessage(error)
                 }
             }
@@ -77,6 +69,13 @@ final class GoogleCalendarStore: ObservableObject {
         lastLoadedMonth = nil
         lastErrorMessage = nil
         isMutatingEvent = false
+        didCheckStoredCredential = true
+    }
+
+    func restoreConnectionIfNeeded() {
+        guard !didCheckStoredCredential else { return }
+        didCheckStoredCredential = true
+        updateConnectionStateFromStoredCredential()
     }
 
     func refreshMonth(containing month: Date, force: Bool = false) {
@@ -219,5 +218,21 @@ final class GoogleCalendarStore: ObservableObject {
             return localized
         }
         return "Google Calendar could not be loaded."
+    }
+
+    private func updateConnectionStateFromStoredCredential() {
+        guard oauth.isConfigured else {
+            connectionState = .missingConfiguration
+            return
+        }
+
+        switch oauth.storedCredentialStatus() {
+        case .missing:
+            connectionState = .signedOut
+        case .needsReconnect:
+            connectionState = .needsReconnect
+        case .ready:
+            connectionState = .signedIn
+        }
     }
 }

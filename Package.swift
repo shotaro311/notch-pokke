@@ -3,17 +3,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "NotchPokke",
+    name: "HoverPocket",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "NotchPokke", targets: ["NotchPokke"])
+        .executable(name: "HoverPocket", targets: ["HoverPocket"])
     ],
     targets: [
         .executableTarget(
-            name: "NotchPokke",
-            path: "Sources/HoverMenuPreview"
+            name: "HoverPocket",
+            path: "Sources/HoverPocket"
         )
     ]
 )

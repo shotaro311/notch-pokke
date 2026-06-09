@@ -21,7 +21,7 @@ enum MirrorMicrophoneRecordingState: Equatable {
 
 @MainActor
 final class MirrorMicrophoneModel: ObservableObject {
-    private static let logger = Logger(subsystem: "local.codex.hover-menu-preview", category: "mirror-microphone")
+    private static let logger = Logger(subsystem: "local.codex.hover-pocket", category: "mirror-microphone")
     static let shared = MirrorMicrophoneModel()
 
     @Published private(set) var status: MirrorMicrophoneStatus = .idle
