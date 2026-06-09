@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-APP_NAME="NotchPokke"
-DISPLAY_NAME="ノッチポッケ"
-PRODUCT_NAME="NotchPokke"
-LEGACY_PROCESS_NAME="HoverMenuPreview"
+APP_NAME="NotchPocket"
+DISPLAY_NAME="ノッチポケット"
+PRODUCT_NAME="NotchPocket"
+LEGACY_PROCESS_NAMES=("NotchPokke" "HoverMenuPreview")
 BUNDLE_DIR="$ROOT_DIR/dist/$APP_NAME.app"
 EXECUTABLE_PATH="$BUNDLE_DIR/Contents/MacOS/$APP_NAME"
 
@@ -82,7 +82,7 @@ default_codesign_identity() {
     | awk -F'"' '/Apple Development:/ { print $2; exit }'
 }
 
-for process_name in "$APP_NAME" "$LEGACY_PROCESS_NAME"; do
+for process_name in "$APP_NAME" "${LEGACY_PROCESS_NAMES[@]}"; do
   if pgrep -x "$process_name" >/dev/null 2>&1; then
     pkill -x "$process_name" || true
     sleep 0.2
@@ -104,7 +104,7 @@ cat > "$BUNDLE_DIR/Contents/Info.plist" <<PLIST
   <key>CFBundleExecutable</key>
   <string>$APP_NAME</string>
   <key>CFBundleIdentifier</key>
-  <string>local.codex.notch-pokke</string>
+  <string>local.codex.notch-pocket</string>
   <key>CFBundleDisplayName</key>
   <string>$DISPLAY_NAME</string>
   <key>CFBundleName</key>
@@ -121,9 +121,9 @@ ${GOOGLE_OAUTH_PLIST}  <key>NSAppTransportSecurity</key>
     <true/>
   </dict>
   <key>NSCameraUsageDescription</key>
-  <string>ノッチポッケ uses the Mac camera to show a mirror preview while the notch panel is open.</string>
+  <string>ノッチポケット uses the Mac camera to show a mirror preview while the notch panel is open.</string>
   <key>NSMicrophoneUsageDescription</key>
-  <string>ノッチポッケ uses the microphone only for the mirror microphone check.</string>
+  <string>ノッチポケット uses the microphone only for the mirror microphone check.</string>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
 </dict>

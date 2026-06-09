@@ -13,30 +13,25 @@ enum GoogleOAuthKeychainError: Error {
 }
 
 final class GoogleOAuthKeychainStore: @unchecked Sendable {
-    private let service = "local.codex.hover-menu-preview.google-oauth"
+    private let service = "local.codex.notch-pocket.google-oauth"
+    private let legacyServices = [
+        "local.codex.hover-menu-preview.google-oauth"
+    ]
     private let account = "default"
 
     func load() throws -> GoogleOAuthStoredCredential? {
-        var query = baseQuery()
-        query[kSecReturnData as String] = true
-        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        if let credential = try load(service: service) {
+            return credential
+        }
 
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &item)
-        if status == errSecItemNotFound {
-            return nil
+        for legacyService in legacyServices {
+            if let credential = try load(service: legacyService) {
+                try? save(credential)
+                return credential
+            }
         }
-        guard status == errSecSuccess else {
-            throw GoogleOAuthKeychainError.unhandledStatus(status)
-        }
-        guard let data = item as? Data else {
-            throw GoogleOAuthKeychainError.decodeFailed
-        }
-        do {
-            return try JSONDecoder().decode(GoogleOAuthStoredCredential.self, from: data)
-        } catch {
-            throw GoogleOAuthKeychainError.decodeFailed
-        }
+
+        return nil
     }
 
     func save(_ credential: GoogleOAuthStoredCredential) throws {
@@ -47,7 +42,7 @@ final class GoogleOAuthKeychainStore: @unchecked Sendable {
             throw GoogleOAuthKeychainError.encodeFailed
         }
 
-        var query = baseQuery()
+        var query = baseQuery(service: service)
         let attributes: [String: Any] = [
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock
@@ -70,10 +65,36 @@ final class GoogleOAuthKeychainStore: @unchecked Sendable {
     }
 
     func delete() {
-        SecItemDelete(baseQuery() as CFDictionary)
+        SecItemDelete(baseQuery(service: service) as CFDictionary)
+        for legacyService in legacyServices {
+            SecItemDelete(baseQuery(service: legacyService) as CFDictionary)
+        }
     }
 
-    private func baseQuery() -> [String: Any] {
+    private func load(service: String) throws -> GoogleOAuthStoredCredential? {
+        var query = baseQuery(service: service)
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        if status == errSecItemNotFound {
+            return nil
+        }
+        guard status == errSecSuccess else {
+            throw GoogleOAuthKeychainError.unhandledStatus(status)
+        }
+        guard let data = item as? Data else {
+            throw GoogleOAuthKeychainError.decodeFailed
+        }
+        do {
+            return try JSONDecoder().decode(GoogleOAuthStoredCredential.self, from: data)
+        } catch {
+            throw GoogleOAuthKeychainError.decodeFailed
+        }
+    }
+
+    private func baseQuery(service: String) -> [String: Any] {
         [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

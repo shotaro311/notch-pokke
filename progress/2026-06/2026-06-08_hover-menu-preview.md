@@ -34,7 +34,7 @@ status: active
 
 - `swift build`: 成功。
 - `git diff --check`: 成功。
-- `./script/build_and_run.sh --verify`: 成功、`NotchPokke launched` を確認。
+- `./script/build_and_run.sh --verify`: 成功、`NotchPocket launched` を確認。
 - `github-codex-autofix` helper の `list-targets --worker mac/windows`: 対象PRなしで即終了することを確認。
 - GitHub labels: `codex-autofix`、`codex-automerge-safe`、`needs-human-merge`、`origin:mac`、`origin:windows`、`codex-claimed:mac`、`codex-claimed:windows` を作成/更新済み。
 - Plugin validation: `validate_plugin.py /Users/shotaro/plugins/github-codex-autofix` 成功。

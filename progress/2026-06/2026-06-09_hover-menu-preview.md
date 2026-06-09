@@ -19,7 +19,7 @@ status: active
 - リファクタリングとして、`HoverPanelShell.swift` からヘッダーUIを `ProviderHeaderView.swift` へ分離。
 - provider アイコンのクリック / ホバー分岐を `ProviderIconButton` に閉じ込め、パネルシェル本体は外枠と provider host の合成だけに整理。
 - `ProviderStore` の設定監視を `settings.objectWillChange` 全体購読から、provider の表示順 / 表示非表示だけの購読へ絞った。これにより、パネルサイズ変更や `Icon switching` 変更で provider store が不要に再通知されない。
-- Google OAuth の Keychain 許可ダイアログが毎回出る問題を調査。生成済み `dist/NotchPokke.app` が ad-hoc 署名になっており、再ビルド後にキーチェーンから別アプリ扱いされやすい状態だった。
+- Google OAuth の Keychain 許可ダイアログが毎回出る問題を調査。生成済み `dist/NotchPocket.app` が ad-hoc 署名になっており、再ビルド後にキーチェーンから別アプリ扱いされやすい状態だった。
 - `GoogleCalendarStore` の初期化時に Keychain を読まないように変更し、保存済みGoogle認証の確認を Calendar パネルを実際に開いた時、または Connect ボタンを押した時へ遅延。
 - `script/build_and_run.sh` で `Apple Development` のコード署名IDを自動検出し、app bundle を安定署名するように変更。`CODESIGN_IDENTITY` が指定されている場合はそちらを優先する。
 
@@ -27,14 +27,18 @@ status: active
 
 - `swift build`: 成功。
 - `git diff --check`: 成功。
-- `./script/build_and_run.sh --verify`: 成功、`NotchPokke launched` を確認。
+- `./script/build_and_run.sh --verify`: 成功、`NotchPocket launched` を確認。
 - `rg -n "power|terminate\\(|providerSwitchingMode|Icon switching|HeaderIconDivider" Sources/HoverMenuPreview`: 上部ヘッダーの `power` / `terminate` 残存なし、追加設定と仕切りの参照のみ確認。
 - `swift test`: `Tests` ターゲットがないため `error: no tests found`。現時点のパッケージ構成では未整備。
 - `bash -n script/build_and_run.sh`: 成功。
-- `codesign -dvvv --entitlements :- dist/NotchPokke.app`: `Signature=adhoc` ではなく `Authority=Apple Development: ...`、`TeamIdentifier=N7VVPW44ZA` を確認。
+- `codesign -dvvv --entitlements :- dist/NotchPocket.app`: `Signature=adhoc` ではなく `Authority=Apple Development: ...`、`TeamIdentifier=N7VVPW44ZA` を確認。
+- アプリ名を `ノッチポケット` / `NotchPocket` へ変更。SwiftPM package / executable / generated app bundle / README / progress / OAuth callback page / permission descriptions を更新。
+- Keychain service を `local.codex.notch-pocket.google-oauth` へ変更し、旧 `local.codex.hover-menu-preview.google-oauth` から保存済みcredentialを読み込めた場合は新serviceへ移す移行処理を追加。
+- Clipboard履歴の保存先を `Application Support/NotchPocket/Clipboard` へ変更し、旧 `Application Support/HoverMenuPreview/Clipboard` からコピー移行する処理を追加。
 
 ## 未完了 / 注意
 
 - 実画面でのホバー切り替えの体感速度は、ユーザー側の操作感確認が必要。
 - 自動テストターゲットは未整備。現状の検証は `swift build` と app bundle 起動確認が中心。
 - Keychain 許可は既存の古い ad-hoc 署名由来の許可情報が残っているため、次に Calendar を開いた時だけ1回出る可能性がある。その場合は `常に許可` を押せば、以後は安定署名に対して保存される見込み。
+- GitHub repository slug は現時点では `shotaro311/notch-pokke` のまま。公開URL変更を避けるため、repo rename は別判断にした。
