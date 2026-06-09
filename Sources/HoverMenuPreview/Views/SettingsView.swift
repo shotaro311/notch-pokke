@@ -67,6 +67,20 @@ struct SettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            VStack(alignment: .leading, spacing: 6) {
+                Picker("Icon switching", selection: $settings.providerSwitchingMode) {
+                    ForEach(ProviderSwitchingMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                Text(settings.providerSwitchingMode.detail)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
             if !settings.rememberLastSelectedProvider, !providerStore.visibleManifests.isEmpty {
                 Picker("Default panel", selection: preferredProviderSelection) {
                     ForEach(providerStore.visibleManifests) { manifest in

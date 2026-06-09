@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 
 struct HoverPanelShell: View {
@@ -71,6 +70,8 @@ private struct ProviderHeaderView: View {
                 ForEach(providerStore.visibleManifests) { manifest in
                     providerButton(manifest)
                 }
+
+                HeaderIconDivider()
             }
 
             Button {
@@ -80,14 +81,6 @@ private struct ProviderHeaderView: View {
             }
             .buttonStyle(IconButtonStyle(selected: false))
             .help("Settings")
-
-            Button {
-                NSApp.terminate(nil)
-            } label: {
-                Image(systemName: "power")
-            }
-            .buttonStyle(IconButtonStyle(selected: false))
-            .help("Quit")
         }
         .padding(.horizontal, 18)
         .frame(height: 54)
@@ -95,12 +88,18 @@ private struct ProviderHeaderView: View {
 
     private func providerButton(_ manifest: PluginManifest) -> some View {
         Button {
-            providerStore.select(manifest.id)
+            if settings.providerSwitchingMode == .click {
+                providerStore.select(manifest.id)
+            }
         } label: {
             Image(systemName: manifest.symbolName)
         }
         .buttonStyle(IconButtonStyle(selected: providerStore.selectedPluginID == manifest.id))
         .help(manifest.title)
+        .onHover { inside in
+            guard inside, settings.providerSwitchingMode == .hover else { return }
+            providerStore.select(manifest.id)
+        }
         .contextMenu {
             Button("Move Left") {
                 providerStore.moveProvider(manifest.id, by: -1)
@@ -112,6 +111,15 @@ private struct ProviderHeaderView: View {
             }
             .disabled(!providerStore.canMoveProvider(manifest.id, by: 1))
         }
+    }
+}
+
+private struct HeaderIconDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.14))
+            .frame(width: 1, height: 18)
+            .padding(.horizontal, 2)
     }
 }
 
