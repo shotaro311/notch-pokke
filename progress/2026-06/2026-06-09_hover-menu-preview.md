@@ -39,6 +39,7 @@ status: active
 - `PlistBuddy` で `CFBundleExecutable=HoverPocket`、`CFBundleIdentifier=local.codex.hover-pocket`、`CFBundleDisplayName=ホバーポケット`、`CFBundleName=ホバーポケット` を確認。
 - `codesign -dvvv dist/HoverPocket.app`: `Identifier=local.codex.hover-pocket`、`Authority=Apple Development: ...`、`TeamIdentifier=N7VVPW44ZA` を確認。
 - `dist/NotchPocket.app` は旧生成物として残っていたため、`trash` でゴミ箱へ移動。現在の `dist` は `HoverPocket.app` のみ。
+- MIT License 追加後に `git diff --check`: 成功。
 - アプリ名を `ノッチポケット` / `NotchPocket` へ変更。SwiftPM package / executable / generated app bundle / README / progress / OAuth callback page / permission descriptions を更新。
 - Keychain service を `local.codex.notch-pocket.google-oauth` へ変更し、旧 `local.codex.hover-menu-preview.google-oauth` から保存済みcredentialを読み込めた場合は新serviceへ移す移行処理を追加。
 - Clipboard履歴の保存先を `Application Support/NotchPocket/Clipboard` へ変更し、旧 `Application Support/HoverMenuPreview/Clipboard` からコピー移行する処理を追加。
@@ -51,6 +52,8 @@ status: active
 - Keychain service を `local.codex.hover-pocket.google-oauth` に変更し、旧 `local.codex.notch-pocket.google-oauth` と旧 `local.codex.hover-menu-preview.google-oauth` から移行できるようにした。
 - Clipboard履歴の保存先を `Application Support/HoverPocket/Clipboard` に変更し、旧 `Application Support/NotchPocket/Clipboard` と旧 `Application Support/HoverMenuPreview/Clipboard` から移行できるようにした。
 - GitHub repository slug と local `origin` を `shotaro311/hover-pocket` へ変更。
+- MIT License を `LICENSE` として追加。
+- README に `License` セクションを追加し、ソースコードは MIT License、`ホバーポケット` / `HoverPocket` の名称・ロゴ・ブランド表示の商標的利用は別扱いであることを明記。
 
 ## 未完了 / 注意
 

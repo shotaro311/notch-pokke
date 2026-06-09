@@ -55,6 +55,7 @@ status: active
 - 2026-06-09: Google OAuth の Keychain 許可ダイアログが毎回出る問題を調査し、Calendar Store 初期化時の Keychain 読み込みを廃止。Calendar を開く / Connect を押すタイミングまで認証確認を遅延。`script/build_and_run.sh` で利用可能な `Apple Development` 署名IDを自動検出して app bundle を安定署名するよう変更。`codesign` で ad-hoc ではなく Apple Development 署名を確認済み。
 - 2026-06-09: アプリ名を `ノッチポケット` / `NotchPocket` へ変更。SwiftPM package / executable / generated app bundle / README / progress / OAuth callback page / permission descriptions を更新。Keychain service と Clipboard 保存先も新名へ変更し、旧保存先からの移行処理を追加。GitHub repository slug と local `origin` も `shotaro311/notch-pocket` へ変更済み。
 - 2026-06-09: アプリ名を `ホバーポケット` / `HoverPocket` へ変更。SwiftPM package / executable / generated app bundle / README / OAuth callback page / permission descriptions を更新。source path を `Sources/HoverPocket` へ移し、provider protocol を `PocketProvider` に改名。旧 `NotchPocket` / `HoverMenuPreview` の Keychain service と Clipboard 保存先からの移行は維持。GitHub repository slug と local `origin` は `shotaro311/hover-pocket` へ変更済み。`swift build`、`git diff --check`、`./script/build_and_run.sh --verify` 成功。generated app bundle は `HoverPocket.app`、bundle ID は `local.codex.hover-pocket`。
+- 2026-06-09: MIT License を `LICENSE` として追加し、README に `License` セクションを追加。ソースコードは MIT License、`ホバーポケット` / `HoverPocket` の名称・ロゴ・ブランド表示の商標的利用は別扱いであることを明記。`git diff --check` 成功。
 
 ## 進行中
 
@@ -138,6 +139,7 @@ status: active
 - 2026-06-09: Google OAuth Keychain 許可の毎回表示対策として、起動時の Keychain 読み込みを遅延し、開発ビルドの app bundle を Apple Development 署名に変更。
 - 2026-06-09: アプリ名を `ノッチポケット` / `NotchPocket` に変更し、README、SwiftPM product、build script、callback文言、progressを同期。旧Keychain service / Clipboard保存先から新名への移行処理を追加。
 - 2026-06-09: アプリ名を `ホバーポケット` / `HoverPocket` に変更し、README、SwiftPM product、build script、callback文言、progressを同期。source path は `Sources/HoverPocket`、provider protocol は `PocketProvider` へ更新。旧 `NotchPocket` / `HoverMenuPreview` の Keychain service と Clipboard 保存先から移行できる状態を維持。
+- 2026-06-09: MIT License を追加し、README にライセンス欄を追加。GitHub 公開上のOSSライセンスを明確化。
 - 2026-06-04: Mirror close 時の点滅対策として、content 非表示化を window `orderOut` 後へ移動。
 - 2026-06-04: Mirror の軽快化として、camera prewarm / provider active 分離 / eventDriven refresh skip を追加。見た目の animation は変更なし。
 - 2026-06-04: Mirror のカクつき / ちらつき対策として、camera preview layer の暗黙 animation 無効化、animation 中 shadow off、閉じかけ再 hover の frame snap 防止、live camera への blur 削除を追加。
