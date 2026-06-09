@@ -26,7 +26,7 @@ final class ProviderStore: ObservableObject {
         settings.visibleManifests(registry.manifests)
     }
 
-    var selectedProvider: (any NotchProvider)? {
+    var selectedProvider: (any PocketProvider)? {
         guard let selectedPluginID,
               visibleManifests.contains(where: { $0.id == selectedPluginID })
         else {
@@ -148,7 +148,7 @@ final class ProviderStore: ObservableObject {
         }
     }
 
-    private func shouldRefresh(provider: any NotchProvider, reason: RefreshReason) -> Bool {
+    private func shouldRefresh(provider: any PocketProvider, reason: RefreshReason) -> Bool {
         switch reason {
         case .appLaunch:
             return provider.manifest.refreshPolicy != .manual

@@ -13,8 +13,9 @@ enum GoogleOAuthKeychainError: Error {
 }
 
 final class GoogleOAuthKeychainStore: @unchecked Sendable {
-    private let service = "local.codex.notch-pocket.google-oauth"
+    private let service = "local.codex.hover-pocket.google-oauth"
     private let legacyServices = [
+        "local.codex.notch-pocket.google-oauth",
         "local.codex.hover-menu-preview.google-oauth"
     ]
     private let account = "default"

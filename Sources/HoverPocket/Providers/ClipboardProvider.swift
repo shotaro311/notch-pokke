@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ClipboardProvider: NotchProvider {
+struct ClipboardProvider: PocketProvider {
     static let pluginID = PluginID(rawValue: "clipboard-history")
 
     let manifest = PluginManifest(

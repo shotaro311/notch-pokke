@@ -22,16 +22,21 @@ final class ClipboardHistoryStore: ObservableObject {
         let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)
             .first ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         return base
-            .appendingPathComponent("NotchPocket", isDirectory: true)
+            .appendingPathComponent("HoverPocket", isDirectory: true)
             .appendingPathComponent("Clipboard", isDirectory: true)
     }()
 
-    private lazy var legacyStorageDirectory: URL = {
+    private lazy var legacyStorageDirectories: [URL] = {
         let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)
             .first ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        return base
-            .appendingPathComponent("HoverMenuPreview", isDirectory: true)
-            .appendingPathComponent("Clipboard", isDirectory: true)
+        return [
+            base
+                .appendingPathComponent("NotchPocket", isDirectory: true)
+                .appendingPathComponent("Clipboard", isDirectory: true),
+            base
+                .appendingPathComponent("HoverMenuPreview", isDirectory: true)
+                .appendingPathComponent("Clipboard", isDirectory: true)
+        ]
     }()
 
     private var metadataURL: URL {
@@ -214,8 +219,12 @@ final class ClipboardHistoryStore: ObservableObject {
 
     private func migrateLegacyStorageIfNeeded() {
         guard !fileManager.fileExists(atPath: metadataURL.path) else { return }
-        let legacyMetadataURL = legacyStorageDirectory.appendingPathComponent("history.json", isDirectory: false)
-        guard fileManager.fileExists(atPath: legacyMetadataURL.path) else { return }
+        guard let legacyStorageDirectory = legacyStorageDirectories.first(where: { directory in
+            let legacyMetadataURL = directory.appendingPathComponent("history.json", isDirectory: false)
+            return fileManager.fileExists(atPath: legacyMetadataURL.path)
+        }) else {
+            return
+        }
 
         do {
             try fileManager.createDirectory(

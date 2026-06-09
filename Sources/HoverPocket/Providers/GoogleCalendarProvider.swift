@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct GoogleCalendarProvider: NotchProvider {
+struct GoogleCalendarProvider: PocketProvider {
     let manifest = PluginManifest(
         id: PluginID(rawValue: "google-calendar"),
         title: "Calendar",

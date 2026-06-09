@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MirrorProvider: NotchProvider {
+struct MirrorProvider: PocketProvider {
     let manifest = PluginManifest(
         id: PluginID(rawValue: "mirror"),
         title: "Mirror",

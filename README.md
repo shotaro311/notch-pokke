@@ -1,8 +1,8 @@
-# ノッチポケット (NotchPocket)
+# ホバーポケット (HoverPocket)
 
-ノッチポケットは、MacBook のノッチ付近にマウスを重ねるだけで、ミラー、Google Calendar、クリップボード履歴を素早く開ける macOS プロトタイプアプリです。
+ホバーポケットは、画面上部へマウスを重ねるだけで、ミラー、Google Calendar、クリップボード履歴を素早く開ける macOS プロトタイプアプリです。
 
-画面上部に小さな黒いハンドルを置き、そこへホバーすると暗いユーティリティパネルが表示されます。通常のメニューバーアプリよりも、ノッチ周辺からパッと取り出す体験を重視しています。
+画面上部に小さな黒いハンドルを置き、そこへホバーすると暗いユーティリティパネルが表示されます。通常のメニューバーアプリよりも、必要なものをポケットからパッと取り出す体験を重視しています。
 
 ## 現在できること
 
@@ -55,7 +55,7 @@
 ./script/build_and_run.sh --verify
 ```
 
-成功すると `NotchPocket launched` と表示されます。
+成功すると `HoverPocket launched` と表示されます。
 
 ## Google Calendar の設定
 
@@ -101,15 +101,15 @@ Google Auth Platform で application type を `Desktop app` にして client を
 
 SwiftUI の `MenuBarExtra` はクリック操作が中心で、標準の右上メニューバー領域に寄っています。このプロトタイプでは、AppKit の `NSPanel` と SwiftUI の hover handler を組み合わせ、画面上部中央のノッチ周辺にトリガーを置いています。
 
-現在の構成は、ノッチ shell と provider-hosted content に分かれています。新しい機能は `NotchProvider` として追加し、`ProviderRegistry` に登録して `PluginHostView` から表示する方針です。
+現在の構成は、hover shell と provider-hosted content に分かれています。新しい機能は `PocketProvider` として追加し、`ProviderRegistry` に登録して `PluginHostView` から表示する方針です。
 
 ```text
-Sources/HoverMenuPreview/
+Sources/HoverPocket/
   App/         アプリ delegate と起動処理
   Windowing/   NSPanel 作成、ノッチ位置計算、hover close、animation timing
   State/       パネル表示状態、provider 選択、loading state
   Models/      plugin ID、manifest、permission、snapshot、preview content
-  Providers/   NotchProvider protocol と ProviderRegistry
+  Providers/   PocketProvider protocol と ProviderRegistry
   Views/       pill、panel shell、plugin host、共通 UI
   Support/     再利用 shape と小さな helper
 ```

@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-APP_NAME="NotchPocket"
-DISPLAY_NAME="ノッチポケット"
-PRODUCT_NAME="NotchPocket"
-LEGACY_PROCESS_NAMES=("NotchPokke" "HoverMenuPreview")
+APP_NAME="HoverPocket"
+DISPLAY_NAME="ホバーポケット"
+PRODUCT_NAME="HoverPocket"
+LEGACY_PROCESS_NAMES=("NotchPocket" "NotchPokke" "HoverMenuPreview")
 BUNDLE_DIR="$ROOT_DIR/dist/$APP_NAME.app"
 EXECUTABLE_PATH="$BUNDLE_DIR/Contents/MacOS/$APP_NAME"
 
@@ -104,7 +104,7 @@ cat > "$BUNDLE_DIR/Contents/Info.plist" <<PLIST
   <key>CFBundleExecutable</key>
   <string>$APP_NAME</string>
   <key>CFBundleIdentifier</key>
-  <string>local.codex.notch-pocket</string>
+  <string>local.codex.hover-pocket</string>
   <key>CFBundleDisplayName</key>
   <string>$DISPLAY_NAME</string>
   <key>CFBundleName</key>
@@ -121,9 +121,9 @@ ${GOOGLE_OAUTH_PLIST}  <key>NSAppTransportSecurity</key>
     <true/>
   </dict>
   <key>NSCameraUsageDescription</key>
-  <string>ノッチポケット uses the Mac camera to show a mirror preview while the notch panel is open.</string>
+  <string>ホバーポケット uses the Mac camera to show a mirror preview while the hover panel is open.</string>
   <key>NSMicrophoneUsageDescription</key>
-  <string>ノッチポケット uses the microphone only for the mirror microphone check.</string>
+  <string>ホバーポケット uses the microphone only for the mirror microphone check.</string>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
 </dict>

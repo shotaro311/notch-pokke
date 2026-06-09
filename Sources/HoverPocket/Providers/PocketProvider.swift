@@ -24,7 +24,7 @@ struct ProviderActions {
     }
 }
 
-protocol NotchProvider: Sendable {
+protocol PocketProvider: Sendable {
     var manifest: PluginManifest { get }
 
     func refresh(context: ProviderContext, reason: RefreshReason) async throws -> ProviderSnapshot
@@ -37,7 +37,7 @@ protocol NotchProvider: Sendable {
     ) -> AnyView
 }
 
-extension NotchProvider {
+extension PocketProvider {
     func refresh(context: ProviderContext, reason: RefreshReason) async throws -> ProviderSnapshot {
         ProviderSnapshot.empty
     }

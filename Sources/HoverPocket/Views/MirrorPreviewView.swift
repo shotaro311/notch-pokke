@@ -292,14 +292,14 @@ struct MirrorPreviewView: View {
 
 @MainActor
 final class MirrorCameraModel: ObservableObject {
-    private static let logger = Logger(subsystem: "local.codex.hover-menu-preview", category: "mirror-camera")
+    private static let logger = Logger(subsystem: "local.codex.hover-pocket", category: "mirror-camera")
     static let shared = MirrorCameraModel()
 
     let session: AVCaptureSession
     @Published private(set) var status: MirrorCameraStatus = .idle
 
     private let sessionBox = CameraSessionBox()
-    private let sessionQueue = DispatchQueue(label: "local.codex.hover-menu-preview.camera")
+    private let sessionQueue = DispatchQueue(label: "local.codex.hover-pocket.camera")
     private let stopGrace: TimeInterval = 4
     private var isPreparing = false
     private var isSessionPrepared = false
