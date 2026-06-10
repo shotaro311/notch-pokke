@@ -1,6 +1,6 @@
 ---
 project_slug: hover-menu-preview
-updated: 2026-06-09
+updated: 2026-06-10
 updated_by: codex
 status: active
 ---
@@ -56,10 +56,11 @@ status: active
 - 2026-06-09: アプリ名を `ノッチポケット` / `NotchPocket` へ変更。SwiftPM package / executable / generated app bundle / README / progress / OAuth callback page / permission descriptions を更新。Keychain service と Clipboard 保存先も新名へ変更し、旧保存先からの移行処理を追加。GitHub repository slug と local `origin` も `shotaro311/notch-pocket` へ変更済み。
 - 2026-06-09: アプリ名を `ホバーポケット` / `HoverPocket` へ変更。SwiftPM package / executable / generated app bundle / README / OAuth callback page / permission descriptions を更新。source path を `Sources/HoverPocket` へ移し、provider protocol を `PocketProvider` に改名。旧 `NotchPocket` / `HoverMenuPreview` の Keychain service と Clipboard 保存先からの移行は維持。GitHub repository slug と local `origin` は `shotaro311/hover-pocket` へ変更済み。`swift build`、`git diff --check`、`./script/build_and_run.sh --verify` 成功。generated app bundle は `HoverPocket.app`、bundle ID は `local.codex.hover-pocket`。
 - 2026-06-09: MIT License を `LICENSE` として追加し、README に `License` セクションを追加。ソースコードは MIT License、`ホバーポケット` / `HoverPocket` の名称・ロゴ・ブランド表示の商標的利用は別扱いであることを明記。`git diff --check` 成功。
+- 2026-06-10: AI native Phase 1 MVP を `feature/ai-native-phase1` で実装。Apple Foundation Models provider、`PocketAction` / `ToolResult` / `IntentPlan` / `ApprovalGate` / `AuditLog`、Calendar read/write tool、下段 command palette lane、構造化 action 由来の承認 UI、解釈候補 fallback UI を追加。`swift build` 成功。Ollama、Codex harness、Clipboard Tool、マルチステップ自律実行、チャット履歴は未実装。
 
 ## 進行中
 
-- Codex: `ホバーポケット` として GitHub public repository へ公開済み。`Mirror` provider は crash / 重さ / close 残像 / ちらつき / UI 枠との同期 / 繰り返し開閉時の処理蓄積対策まで実装済み。provider アイコン切替時のヘッダー選択状態更新バグも修正済み。`Calendar` provider は Google account login、calendarList、events.list、日付別イベント抽出まで実アカウントで検証済み。追加で予定追加、編集、削除の API / UI は実装済みで、write scope の再接続待ち。`Clipboard` provider は text/image 履歴、local image 保存、再コピー、drag/drop まで実装済み。パネル表示領域は `小 / 中 / 大` で切替可能で、ヘッダーには現在サイズ1文字だけを表示する。上部ヘッダーの電源アイコンは廃止済みで、provider アイコン切替は Settings から `Click / Hover` を選択できる。GitHub PR の自動分類と Mac / Windows Codex Automation による自動修正運用の入口動作も実PRで確認済み。
+- Codex: `ホバーポケット` として GitHub public repository へ公開済み。`Mirror` provider は crash / 重さ / close 残像 / ちらつき / UI 枠との同期 / 繰り返し開閉時の処理蓄積対策まで実装済み。provider アイコン切替時のヘッダー選択状態更新バグも修正済み。`Calendar` provider は Google account login、calendarList、events.list、日付別イベント抽出まで実アカウントで検証済み。追加で予定追加、編集、削除の API / UI は実装済みで、write scope の再接続待ち。`Clipboard` provider は text/image 履歴、local image 保存、再コピー、drag/drop まで実装済み。パネル表示領域は `小 / 中 / 大` で切替可能で、ヘッダーには現在サイズ1文字だけを表示する。AI native Phase 1 として、Apple Foundation Models provider、構造化 action、Calendar read/write tool、ApprovalGate、AuditLog、下段 command palette lane、解釈候補 fallback UI を追加済み。上部ヘッダーの電源アイコンは廃止済みで、provider アイコン切替は Settings から `Click / Hover` を選択できる。GitHub PR の自動分類と Mac / Windows Codex Automation による自動修正運用の入口動作も実PRで確認済み。
 
 ## 次アクション
 
@@ -69,6 +70,8 @@ status: active
 - Calendar provider の write scope 追加同意後、一時イベントの作成・編集・削除を実アカウントで確認する。
 - Clipboard provider の text/image drag/drop を、Finder / Slack / browser input など複数アプリで手動確認する。
 - Clipboard image drag/drop を Codex chat 欄で再確認する。
+- Apple Foundation Models の実機可用性を macOS 26 / Apple Intelligence 環境で確認する。
+- AI command palette の手動 UX 確認を行い、曖昧入力時の候補表示と Calendar write 承認導線を確認する。
 - アプリ化の要件を決める: 終了/自動起動、Google OAuth consent screen、設定項目、今後追加する provider。
 - 次の本物のレビューコメント付きPRで、Codex Automation がレビュー内容を読んで修正commitを積むところまで確認する。
 
@@ -81,6 +84,7 @@ status: active
 - `.env.local` には Google OAuth client ID / secret が入っているため、値を出力せず、repo に含めない。
 - Google OAuth consent screen が Testing の場合、登録済み test user のみログイン可能。一般公開には Google OAuth app verification が必要になる可能性がある。
 - Calendar event 書き込みには `calendar.events` scope が必要。既存の read-only token では再接続が必要。
+- AI native Phase 1 の Apple Foundation Models provider は SDK / OS が未対応の場合、deterministic fallback で候補生成する。モデル本体の実行確認は対応OSで別途必要。
 - Clipboard history は機密テキストも拾えるため、今後は除外ルール、保存期間設定、private mode を追加する余地がある。
 - Microphone meter は Mirror microphone row 表示中に自動起動する。初回 permission prompt は手動操作が必要。
 - 再ビルド後の ad-hoc 署名では camera / microphone permission prompt が再表示されることがある。配布時は安定した署名で確認する。
@@ -101,6 +105,7 @@ status: active
 
 ## 詳細ログ
 
+- [2026-06-10](2026-06/2026-06-10_hover-menu-preview.md)
 - [2026-06-09](2026-06/2026-06-09_hover-menu-preview.md)
 - [2026-06-08](2026-06/2026-06-08_hover-menu-preview.md)
 - [2026-06-07](2026-06/2026-06-07_hover-menu-preview.md)
@@ -140,6 +145,7 @@ status: active
 - 2026-06-09: アプリ名を `ノッチポケット` / `NotchPocket` に変更し、README、SwiftPM product、build script、callback文言、progressを同期。旧Keychain service / Clipboard保存先から新名への移行処理を追加。
 - 2026-06-09: アプリ名を `ホバーポケット` / `HoverPocket` に変更し、README、SwiftPM product、build script、callback文言、progressを同期。source path は `Sources/HoverPocket`、provider protocol は `PocketProvider` へ更新。旧 `NotchPocket` / `HoverMenuPreview` の Keychain service と Clipboard 保存先から移行できる状態を維持。
 - 2026-06-09: MIT License を追加し、README にライセンス欄を追加。GitHub 公開上のOSSライセンスを明確化。
+- 2026-06-10: AI native Phase 1 MVP として、Apple Foundation Models provider、構造化 action / tool / approval / audit 基盤、Calendar read/write tool、下段 command palette lane、解釈候補 fallback UI を追加。`swift build` 成功。
 - 2026-06-04: Mirror close 時の点滅対策として、content 非表示化を window `orderOut` 後へ移動。
 - 2026-06-04: Mirror の軽快化として、camera prewarm / provider active 分離 / eventDriven refresh skip を追加。見た目の animation は変更なし。
 - 2026-06-04: Mirror のカクつき / ちらつき対策として、camera preview layer の暗黙 animation 無効化、animation 中 shadow off、閉じかけ再 hover の frame snap 防止、live camera への blur 削除を追加。
