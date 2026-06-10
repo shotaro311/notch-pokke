@@ -16,10 +16,12 @@ status: active
 - 承認 UI は `PocketAction.approvalFields` から生成し、モデル生成文を表示しない構成にした。
 - Hover panel 下部に独立した command palette lane を追加。既存 provider の hover 表示経路では AI 処理を走らせない。
 - 意図が曖昧な入力では `IntentPlan.candidates` をボタン表示し、ユーザーが解釈候補を選べる fallback UI を追加。
+- Review fix: ApprovalCard で全 `approvalFields` を表示するよう修正。`PocketAction.requiresApproval` を `kind` 由来の computed property に変更し、Calendar write は常に承認必須にした。
 
 ## 検証
 
 - `swift build` 成功。
+- Review fix 後の `swift build` 成功。
 
 ## 残課題
 

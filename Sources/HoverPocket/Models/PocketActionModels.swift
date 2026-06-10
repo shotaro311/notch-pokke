@@ -30,7 +30,6 @@ struct PocketAction: Identifiable, Codable, Equatable, Sendable {
     let id: UUID
     let kind: PocketActionKind
     let sourceText: String
-    let requiresApproval: Bool
     let readParameters: CalendarReadParameters?
     let createEventParameters: CalendarCreateEventParameters?
 
@@ -38,16 +37,23 @@ struct PocketAction: Identifiable, Codable, Equatable, Sendable {
         id: UUID = UUID(),
         kind: PocketActionKind,
         sourceText: String,
-        requiresApproval: Bool,
         readParameters: CalendarReadParameters? = nil,
         createEventParameters: CalendarCreateEventParameters? = nil
     ) {
         self.id = id
         self.kind = kind
         self.sourceText = sourceText
-        self.requiresApproval = requiresApproval
         self.readParameters = readParameters
         self.createEventParameters = createEventParameters
+    }
+
+    var requiresApproval: Bool {
+        switch kind {
+        case .calendarReadDay:
+            return false
+        case .calendarCreateEvent:
+            return true
+        }
     }
 
     var displayTitle: String {

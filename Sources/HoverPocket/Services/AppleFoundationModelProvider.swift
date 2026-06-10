@@ -92,7 +92,6 @@ struct AppleFoundationModelProvider: AIModelProvider {
             let action = PocketAction(
                 kind: .calendarReadDay,
                 sourceText: sourceText,
-                requiresApproval: false,
                 readParameters: CalendarReadParameters(date: date)
             )
             return IntentPlan(
@@ -111,7 +110,6 @@ struct AppleFoundationModelProvider: AIModelProvider {
             let action = PocketAction(
                 kind: .calendarCreateEvent,
                 sourceText: sourceText,
-                requiresApproval: true,
                 createEventParameters: CalendarCreateEventParameters(
                     calendarID: calendar?.id,
                     calendarTitle: calendar?.title,
@@ -148,7 +146,6 @@ struct AppleFoundationModelProvider: AIModelProvider {
         let readAction = PocketAction(
             kind: .calendarReadDay,
             sourceText: normalized,
-            requiresApproval: false,
             readParameters: CalendarReadParameters(date: targetDay)
         )
         let createAction = makeCreateEventAction(from: normalized, targetDay: targetDay, context: context)
@@ -198,7 +195,6 @@ struct AppleFoundationModelProvider: AIModelProvider {
         return PocketAction(
             kind: .calendarCreateEvent,
             sourceText: input,
-            requiresApproval: true,
             createEventParameters: CalendarCreateEventParameters(
                 calendarID: calendar.id,
                 calendarTitle: calendar.title,

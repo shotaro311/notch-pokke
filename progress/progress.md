@@ -57,6 +57,7 @@ status: active
 - 2026-06-09: アプリ名を `ホバーポケット` / `HoverPocket` へ変更。SwiftPM package / executable / generated app bundle / README / OAuth callback page / permission descriptions を更新。source path を `Sources/HoverPocket` へ移し、provider protocol を `PocketProvider` に改名。旧 `NotchPocket` / `HoverMenuPreview` の Keychain service と Clipboard 保存先からの移行は維持。GitHub repository slug と local `origin` は `shotaro311/hover-pocket` へ変更済み。`swift build`、`git diff --check`、`./script/build_and_run.sh --verify` 成功。generated app bundle は `HoverPocket.app`、bundle ID は `local.codex.hover-pocket`。
 - 2026-06-09: MIT License を `LICENSE` として追加し、README に `License` セクションを追加。ソースコードは MIT License、`ホバーポケット` / `HoverPocket` の名称・ロゴ・ブランド表示の商標的利用は別扱いであることを明記。`git diff --check` 成功。
 - 2026-06-10: AI native Phase 1 MVP を `feature/ai-native-phase1` で実装。Apple Foundation Models provider、`PocketAction` / `ToolResult` / `IntentPlan` / `ApprovalGate` / `AuditLog`、Calendar read/write tool、下段 command palette lane、構造化 action 由来の承認 UI、解釈候補 fallback UI を追加。`swift build` 成功。Ollama、Codex harness、Clipboard Tool、マルチステップ自律実行、チャット履歴は未実装。
+- 2026-06-10: AI native Phase 1 の review fix として、ApprovalCard が全 `approvalFields` を表示するよう修正。`PocketAction.requiresApproval` を `kind` 由来の computed property に変更し、Calendar write は常に承認必須にした。`swift build` 成功。
 
 ## 進行中
 
@@ -146,6 +147,7 @@ status: active
 - 2026-06-09: アプリ名を `ホバーポケット` / `HoverPocket` に変更し、README、SwiftPM product、build script、callback文言、progressを同期。source path は `Sources/HoverPocket`、provider protocol は `PocketProvider` へ更新。旧 `NotchPocket` / `HoverMenuPreview` の Keychain service と Clipboard 保存先から移行できる状態を維持。
 - 2026-06-09: MIT License を追加し、README にライセンス欄を追加。GitHub 公開上のOSSライセンスを明確化。
 - 2026-06-10: AI native Phase 1 MVP として、Apple Foundation Models provider、構造化 action / tool / approval / audit 基盤、Calendar read/write tool、下段 command palette lane、解釈候補 fallback UI を追加。`swift build` 成功。
+- 2026-06-10: Review fix として ApprovalCard の全 approval field 表示と `requiresApproval` の computed 化を実施。`swift build` 成功。
 - 2026-06-04: Mirror close 時の点滅対策として、content 非表示化を window `orderOut` 後へ移動。
 - 2026-06-04: Mirror の軽快化として、camera prewarm / provider active 分離 / eventDriven refresh skip を追加。見た目の animation は変更なし。
 - 2026-06-04: Mirror のカクつき / ちらつき対策として、camera preview layer の暗黙 animation 無効化、animation 中 shadow off、閉じかけ再 hover の frame snap 防止、live camera への blur 削除を追加。
