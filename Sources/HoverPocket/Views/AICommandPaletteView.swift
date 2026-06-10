@@ -52,7 +52,9 @@ struct AICommandPaletteView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .frame(minHeight: 112)
+        // 高さは親（HoverPanelShell）が aiPaletteHeight で固定する。
+        // ここで伸ばすと Provider 領域を押し潰すので、レーン内で上詰めにする。
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 
@@ -68,19 +70,22 @@ private struct ApprovalCard: View {
                     .foregroundStyle(Color.white.opacity(0.9))
                     .lineLimit(1)
 
-                VStack(alignment: .leading, spacing: 3) {
-                    ForEach(action.approvalFields) { field in
-                        HStack(alignment: .firstTextBaseline, spacing: 7) {
-                            Text(field.label.uppercased())
-                                .font(.system(size: 8, weight: .bold))
-                                .foregroundStyle(Color.white.opacity(0.32))
-                                .frame(width: 52, alignment: .leading)
+                // フィールドは省略しない（承認原則）。固定レーンに収まらない場合はスクロールで全件確認できるようにする
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        ForEach(action.approvalFields) { field in
+                            HStack(alignment: .firstTextBaseline, spacing: 7) {
+                                Text(field.label.uppercased())
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundStyle(Color.white.opacity(0.32))
+                                    .frame(width: 52, alignment: .leading)
 
-                            Text(field.value)
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(Color.white.opacity(0.68))
-                                .lineLimit(field.id == "notes" ? 2 : 1)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                                Text(field.value)
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundStyle(Color.white.opacity(0.68))
+                                    .lineLimit(field.id == "notes" ? 2 : 1)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
                         }
                     }
                 }
