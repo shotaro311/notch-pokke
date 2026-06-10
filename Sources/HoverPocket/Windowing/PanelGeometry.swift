@@ -11,6 +11,8 @@ enum PanelLayout {
         notchHandleWidth
     }
 
+    static let aiPaletteHeight: CGFloat = 132
+
     static func previewSize(for panelSize: PanelSizeOption) -> NSSize {
         switch panelSize {
         case .small:
@@ -20,6 +22,12 @@ enum PanelLayout {
         case .large:
             return NSSize(width: 600, height: 430)
         }
+    }
+
+    // AIパレットは Provider 領域を侵食せず、パネル全体の高さに加算する
+    static func panelTotalSize(for panelSize: PanelSizeOption) -> NSSize {
+        let preview = previewSize(for: panelSize)
+        return NSSize(width: preview.width, height: preview.height + aiPaletteHeight)
     }
 }
 
@@ -50,7 +58,7 @@ enum PanelGeometry {
     static func frames(on screen: NSScreen, panelSize: PanelSizeOption) -> PanelFrames {
         let notchProfile = notchProfile(on: screen)
         let pill = pillMetrics(on: screen, notchProfile: notchProfile)
-        let previewSize = PanelLayout.previewSize(for: panelSize)
+        let previewSize = PanelLayout.panelTotalSize(for: panelSize)
         let pillY = screen.frame.maxY - PanelLayout.pillHeight
         let pillFrame = NSRect(
             x: pill.minX,
